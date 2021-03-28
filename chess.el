@@ -49,10 +49,55 @@
 	(nth (nth 0 index) piece-line)
 	)
     )
-    
-  
+
+(defun set-nth (list index val)
+    (let ((tmplist ()) (count 0) )
+      (while list
+        (if (eq count index)
+	  (push val tmplist)
+	  (push (car list) tmplist)
+	)
+	(setq list (cdr list))
+	(setq count (+ count 1))
+	)
+       (reverse tmplist)
+     )
+ )
 
 
+(defun is-above (cur-index mov-index)
+  (and (eq (car cur-index) (car mov-index)) (eq (cadr cur-index) (+ (cadr mov-index) 1) ) )
+)
+(defun is-below (cur-index mov-index)
+  (and (eq (car cur-index) (car mov-index)) (eq (cadr cur-index) (- (cadr mov-index) 1) ) )
+)
+(defun is-above-right (cur-index mov-index)
+  (and (eq (car cur-index) (- (car mov-index) 1)) (eq (cadr cur-index) (+ (cadr mov-index) 1) ) )
+)
+(defun is-above-left (cur-index mov-index)
+  (and (eq (car cur-index) (+ (car mov-index) 1)) (eq (cadr cur-index) (+ (cadr mov-index) 1) ) )
+)
+
+(defun is-legal-move-pawn (piece cur-index mov-index board player)
+    (if (eq player 1)
+	(let (
+	    (above (list (car cur-index) (+ (cadr cur-index) 1)))
+	    (above-right (list (+ (car cur-index) 1) (+ (cadr cur-index) 1)))
+	    (above-left (list (- (car cur-index) 1) (+ (cadr cur-index) 1)))
+	    )
+	    (or
+		(and (equal above mov-index) (string-equal (get-piece above board) "*"))
+		(and (equal above-left mov-index) (string-equal (get-piece above-left board) "B"))
+		(and (equal above-right mov-index) (string-equal (get-piece above-right board) "B"))
+		))))
+
+(defun is-legal-move (piece cur-index mov-index board)
+  "Checks if a move is legal for PIECE INDEX and BOARD."
+  (progn
+    (cond
+     ((string-equal piece "b") (is-legal-move-pawn piece cur-index mov-index board 1))
+     ((string-equal piece "B") (message "handling B"))
+     (t (message "couldnt find any for: %s" piece)))))
 
 
 (defun chess ()
@@ -79,17 +124,3 @@
     )
   )
 )
-
-
-
-
-
-
-
-(defun rubens-playground ()
-  "Just a playground."
-  (interactive)
-  (let ((hello "hello"))
-    (message hello)
-    )
-  )
