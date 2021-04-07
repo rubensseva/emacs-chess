@@ -64,40 +64,59 @@
      )
  )
 
-
-(defun is-above (cur-index mov-index)
-  (and (eq (car cur-index) (car mov-index)) (eq (cadr cur-index) (+ (cadr mov-index) 1) ) )
-)
-(defun is-below (cur-index mov-index)
-  (and (eq (car cur-index) (car mov-index)) (eq (cadr cur-index) (- (cadr mov-index) 1) ) )
-)
-(defun is-above-right (cur-index mov-index)
-  (and (eq (car cur-index) (- (car mov-index) 1)) (eq (cadr cur-index) (+ (cadr mov-index) 1) ) )
-)
-(defun is-above-left (cur-index mov-index)
-  (and (eq (car cur-index) (+ (car mov-index) 1)) (eq (cadr cur-index) (+ (cadr mov-index) 1) ) )
-)
-
 (defun is-legal-move-pawn (piece cur-index mov-index board player)
-    (if (eq player 1)
+    (let ((player-dir (if (eq player 1) -1 1)))
 	(let (
-	    (above (list (car cur-index) (+ (cadr cur-index) 1)))
-	    (above-right (list (+ (car cur-index) 1) (+ (cadr cur-index) 1)))
-	    (above-left (list (- (car cur-index) 1) (+ (cadr cur-index) 1)))
+	    (above (list (car cur-index) (+ (cadr cur-index) player-dir)))
+	    (above-right (list (+ (car cur-index) 1) (+ (cadr cur-index) player-dir)))
+	    (above-left (list (- (car cur-index) 1) (+ (cadr cur-index) player-dir)))
+	    (enemy-piece (if (eq player 1) "B" "b"))
 	    )
 	    (or
 		(and (equal above mov-index) (string-equal (get-piece above board) "*"))
-		(and (equal above-left mov-index) (string-equal (get-piece above-left board) "B"))
-		(and (equal above-right mov-index) (string-equal (get-piece above-right board) "B"))
+		(and (equal above-left mov-index) (string-equal (get-piece above-left board) enemy-piece))
+		(and (equal above-right mov-index) (string-equal (get-piece above-right board) enemy-piece))
 		))))
+
+(defun is-in-board (index)
+  (and
+     (> (car index) 0)
+     (< (car index) 8)
+     (> (cadr index) 0)
+     (< (cadr index) 8)))
+  
 
 (defun is-legal-move (piece cur-index mov-index board)
   "Checks if a move is legal for PIECE INDEX and BOARD."
-  (progn
     (cond
+     ((not (is-in-board mov-index)) (message "mov-index not in board"))
      ((string-equal piece "b") (is-legal-move-pawn piece cur-index mov-index board 1))
-     ((string-equal piece "B") (message "handling B"))
-     (t (message "couldnt find any for: %s" piece)))))
+     ((string-equal piece "B") (is-legal-move-pawn piece cur-index mov-index board 2))
+     (t (message "couldnt find any for: %s" piece))))
+
+(defun chess-set-piece-in-line (piece index line)
+    (set-nth line index piece)
+    )
+  
+
+(defun set-board-piece (piece index board)
+  (set-nth
+           board
+	   (car index)
+	   (set-nth
+	    (nth (car index) board)
+	    (cadr index)
+	    piece)
+	   ))
+
+(defun move-piece (piece cur-index mov-index board)
+  (progn 
+    (setq board (set-board-piece "*" cur-index board))
+    (setq board (set-board-piece piece mov-index board))
+    board
+    ))
+
+  
 
 
 (defun chess ()
